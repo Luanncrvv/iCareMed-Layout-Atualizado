@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>iCare Med - Distribuição de Materiais Hospitalares</title>
+  <link rel="icon" type="image/png" href="favicon-16x16.png" />
+
+  <!-- Tailwind CSS with Plugins -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet">
+
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#2d318f",
+            "accent": "#03AEE7",
+            "background-light": "#f6f6f8",
+            "background-dark": "#14141e",
+          },
+          fontFamily: {
+            "display": ["Inter", "sans-serif"],
+            "sans": ["Inter", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.5rem",
+            "lg": "1rem",
+            "xl": "1.5rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .filter-checkbox:checked {
+      background-color: #2d318f;
+    }
+
+    /* Custom scrollbar for horizontal categories on mobile */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Logo na navbar: altura fixa, proporção mantida */
+    nav .logo {
+      display: flex;
+      align-items: center;
+      height: 2.5rem;
+    }
+
+    nav .logo img {
+      height: 2.5rem;
+      width: auto;
+      max-height: 2.5rem;
+      object-fit: contain;
+      display: block;
+    }
+  </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-200">
+  <div id="root"></div>
+
+  <!-- React and Dependencies -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/history@5/umd/history.development.js"></script>
+  <script src="https://unpkg.com/react-router@6.3.0/umd/react-router.development.js"></script>
+  <script src="https://unpkg.com/react-router-dom@6.3.0/umd/react-router-dom.development.js"></script>
+  <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+    const { createRoot } = ReactDOM;
+    const { MemoryRouter, Routes, Route, Link, useNavigate, useLocation } = ReactRouterDOM;
+
+    // --- Common Components ---
+
+    const TopBar = () => (
+      <div class="bg-primary dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 py-2 hidden md:block">
+        <div class="container mx-auto px-6 flex justify-between items-center text-sm">
+          <div class="flex items-center space-x-6">
+            <a class="flex items-center gap-2 hover:opacity-80 transition-opacity">
+              <span class="material-icons text-[18px] text-[#FFFFFF]">phone_iphone</span>
+              <span class="text-[#FFFFFF] font-medium dark:text-slate-300">(71) 99333-3950</span>
+            </a>
+            <a class="flex items-center gap-2 hover:opacity-80 transition-opacity">
+              <span class="material-icons text-[18px] text-[#FFFFFF]">email</span>
+              <span class="text-[#FFFFFF] font-medium dark:text-slate-300">vendas@grupoicaremed.com</span>
+            </a>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="material-icons text-[18px] text-[#FFFFFF]">location_on</span>
+            <span class="text-[#FFFFFF] font-medium dark:text-slate-300">Lauro de Freitas, BA</span>
+          </div>
+        </div>
+      </div>
+    );
+
+    const Navbar = () => {
+      const location = useLocation();
+      const isActive = (path) => location.pathname === path;
+
+      return (
+        <nav class="sticky top-0 z-50 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+          <div class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <Link to="/" class="logo flex items-center">
+              <img src="icarelogo.png" alt="iCare Med - Logo" />
+            </Link>
+            <div class="hidden md:flex items-center space-x-8">
+              <Link to="/" class={`${isActive('/') ? 'text-primary dark:text-white border-primary border-b-2' : 'text-slate-600 dark:text-slate-400'} font-semibold hover:text-primary transition-colors`}>Home</Link>
+              <Link to="/sobre" class={`${isActive('/sobre') ? 'text-primary dark:text-white border-primary border-b-2' : 'text-slate-600 dark:text-slate-400'} font-semibold hover:text-primary transition-colors`}>Sobre nós</Link>
+              <Link to="/catalogo" class={`${isActive('/catalogo') ? 'text-primary dark:text-white border-primary border-b-2' : 'text-slate-600 dark:text-slate-400'} font-semibold hover:text-primary transition-colors`}>Catálogo</Link>
+              <Link to="/proposta" class={`${isActive('/proposta') ? 'text-primary dark:text-white border-primary border-b-2' : 'text-slate-600 dark:text-slate-400'} font-semibold hover:text-primary transition-colors`}>Proposta</Link>
+              <Link to="/contato" class={`${isActive('/contato') ? 'text-primary dark:text-white border-primary border-b-2' : 'text-slate-600 dark:text-slate-400'} font-semibold hover:text-primary transition-colors`}>Contato</Link>
+            </div>
+            <Link to="/contato" class="bg-accent hover:bg-accent/90 text-white px-6 py-2.5 rounded-full font-semibold transition-all flex items-center gap-2 shadow-lg shadow-accent/20">
+              <span class="material-icons text-[20px]">chat</span>
+              Fale conosco
+            </Link>
+          </div>
+        </nav>
+      );
+    };
+
+    const Footer = () => (
+      <footer class="bg-primary text-white pt-20 pb-10">
+        <div class="container mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 border-b border-white/10 pb-16">
+          <div>
+            <div class="flex items-center gap-2 mb-8">
+              <div class="bg-white rounded-xl px-4 py-2.5 shadow-lg inline-flex items-center">
+                <img src="icarelogo.png" alt="iCare Med" class="h-10 w-auto object-contain" />
+              </div>
+            </div>
+            <p class="text-white/70 leading-relaxed">
+              Referência na distribuição de suprimentos médico-hospitalares, conectando os melhores fabricantes às principais instituições de saúde.
+            </p>
+          </div>
+          <div>
+            <h4 class="text-lg font-bold mb-8">Links Úteis</h4>
+            <ul class="space-y-4">
+              <li><Link class="text-white/70 hover:text-accent transition-colors" to="/">Home</Link></li>
+              <li><Link class="text-white/70 hover:text-accent transition-colors" to="/sobre">Quem Somos</Link></li>
+              <li><Link class="text-white/70 hover:text-accent transition-colors" to="/catalogo">Nossos Produtos</Link></li>
+              <li><Link class="text-white/70 hover:text-accent transition-colors" to="/proposta">Solicitar Orçamento</Link></li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="text-lg font-bold mb-8">Especialidades</h4>
+            <ul class="space-y-4">
+              <li><a class="text-white/70 hover:text-accent transition-colors" href="#">Centro Cirúrgico</a></li>
+              <li><a class="text-white/70 hover:text-accent transition-colors" href="#">UTI e Emergência</a></li>
+              <li><a class="text-white/70 hover:text-accent transition-colors" href="#">Clínicas Odontológicas</a></li>
+              <li><a class="text-white/70 hover:text-accent transition-colors" href="#">Home Care</a></li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="text-lg font-bold mb-8">Fale Conosco</h4>
+            <div class="space-y-4">
+              <div class="flex items-start gap-3 text-white/70">
+                <span class="material-icons text-accent">place</span>
+                <span>Lauro de Freitas, BA</span>
+              </div>
+              <div class="flex items-center gap-3 text-white/70">
+                <span class="material-icons text-accent">phone</span>
+                <span>(71) 99333-3950</span>
+              </div>
+              <div class="flex items-center gap-3 text-white/70">
+                <span class="material-icons text-accent">email</span>
+                <span>vendas@grupoicaremed.com</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="container mx-auto px-6 pt-10 flex flex-col md:flex-row justify-between items-center gap-4 text-white/50 text-sm">
+          <p>© 2026 iCare Med - Todos os direitos reservados.</p>
+          <div class="flex gap-6">
+            <a class="hover:text-white" href="#">Políticas de Privacidade</a>
+            <a class="hover:text-white" href="#">Termos de Uso</a>
+          </div>
+        </div>
+      </footer>
+    );
+
+    const PartnersCarousel = () => {
+      const partners = [
+        { name: 'Descarpack', image: 'logosparceiros/descarpack.png' },
+        { name: 'Fortecare', image: 'logosparceiros/fortecare.png' },
+        { name: 'Kelldrin', image: 'logosparceiros/kelldrin.png' }
+      ];
+
+      return (
+        <section class="py-16 bg-white dark:bg-background-dark">
+          <style>{`
+            @keyframes rotateCarousel {
+              0% {
+                transform: translateX(0);
+              }
+              100% {
+                transform: translateX(-100%);
+              }
+            }
+            .carousel-track {
+              display: flex;
+              animation: rotateCarousel 15s linear infinite;
+              width: 300%;
+            }
+            .carousel-item {
+              flex: 0 0 33.333%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            }
+          `}</style>
+          <div class="container mx-auto px-6">
+            <div class="text-center mb-12">
+              <h2 class="text-3xl font-bold text-primary dark:text-white mb-4">Nossos Parceiros</h2>
+              <div class="w-20 h-1 bg-accent mx-auto"></div>
+            </div>
+            <div class="max-w-4xl mx-auto">
+              <div class="bg-slate-50 dark:bg-slate-800 rounded-2xl p-12 min-h-[280px] flex items-center justify-center overflow-hidden shadow-lg">
+                <div class="carousel-track">
+                  {[...partners, ...partners].map((partner, index) => (
+                    <div key={index} class="carousel-item">
+                      <img
+                        src={partner.image}
+                        alt={partner.name}
+                        class="h-56 w-56 object-contain"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      );
+    };
+
+    // --- Pages ---
+
+    const HomePage = () => {
+      const navigate = useNavigate();
+      return (
+        <div className="animate-in fade-in duration-500">
+          <TopBar />
+          <Navbar />
+          {/* Hero Section */}
+          <section class="relative overflow-visible bg-white dark:bg-background-dark flex items-center" style={{ backgroundImage: "url('hero.png')", backgroundSize: "100% auto", backgroundPosition: "center top", backgroundRepeat: "no-repeat", minHeight: "1080px" }}>
+            <div class="container mx-auto px-6 w-full">
+              <div class="max-w-xl">
+                <h1 class="text-4xl md:text-6xl font-extrabold text-white dark:text-white leading-tight mb-6">
+                  Distribuição de Materiais Hospitalares com <span class="text-accent">qualidade e agilidade</span>
+                </h1>
+                <p class="text-lg text-white dark:text-white mb-10">
+                  A iCare Med é parceira estratégica de instituições de saúde, garantindo o fornecimento contínuo de suprimentos essenciais com padrão premium de atendimento.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4">
+                  <Link to="/catalogo" class="bg-primary text-white px-8 py-4 rounded-lg font-bold hover:scale-[1.02] transition-transform flex items-center justify-center gap-2">
+                    <span class="material-icons">inventory_2</span>
+                    Ver Catálogo
+                  </Link>
+                  <Link to="/proposta" class="border-2 border-accent bg-accent text-white px-8 py-4 rounded-lg font-bold hover:bg-accent/90 transition-colors flex items-center justify-center gap-2">
+                    <span class="material-icons">description</span>
+                    Solicitar Proposta
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Categories */}
+          <section class="py-20 bg-slate-50 dark:bg-slate-900/50">
+            <div class="container mx-auto px-6">
+              <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-primary dark:text-white mb-4">Nossas Categorias</h2>
+                <div class="w-20 h-1 bg-accent mx-auto"></div>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                {[
+                  { icon: 'masks', title: 'EPIs', desc: 'Máscaras, luvas, aventais e proteção facial completa.' },
+                  { icon: 'delete_outline', title: 'Descartáveis', desc: 'Seringas, agulhas, coletores e insumos de uso único.' },
+                  { icon: 'healing', title: 'Curativos', desc: 'Gazes, fitas, esparadrapo e campo operatório.' }
+                ].map((cat, i) => (
+                  <div key={i} onClick={() => navigate('/catalogo')} class="group bg-white dark:bg-slate-800 p-8 rounded-xl shadow-lg hover:shadow-2xl transition-all border border-slate-100 dark:border-slate-700 cursor-pointer hover:scale-105 flex flex-col items-center justify-start text-center min-h-[350px] gap-4">
+                    <div class="w-16 h-16 bg-accent/20 rounded-lg flex items-center justify-center group-hover:bg-accent group-hover:text-white transition-colors shadow-md">
+                      <span class="material-icons text-4xl text-accent group-hover:text-white">{cat.icon}</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-primary dark:text-white mb-3">{cat.title}</h3>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm">{cat.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* Partners Carousel */}
+          <PartnersCarousel />
+
+          {/* Benefits Section */}
+          <section class="py-24 bg-white dark:bg-background-dark overflow-hidden">
+            <div class="container mx-auto px-6">
+              <div class="flex flex-col lg:flex-row gap-16 items-center">
+                <div class="lg:w-1/2">
+                  <h2 class="text-4xl font-bold text-primary dark:text-white mb-8">Por que escolher a <span class="text-accent">iCare Med?</span></h2>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                    {[
+                      { icon: 'verified', title: 'Qualidade', text: 'Produtos certificados pelos órgãos reguladores nacionais e internacionais.' },
+                      { icon: 'bolt', title: 'Agilidade', text: 'Logística otimizada para entregas em tempo recorde para sua clínica ou hospital.' },
+                      { icon: 'psychology', title: 'Expertise', text: 'Consultoria técnica para auxiliar na escolha dos melhores materiais.' },
+                      { icon: 'category', title: 'Variedade', text: 'Amplo portfólio para atender todas as especialidades médicas em um só lugar.' }
+                    ].map((item, i) => (
+                      <div key={i} class="flex flex-col gap-4">
+                        <div class="w-12 h-12 text-accent bg-accent/10 rounded-full flex items-center justify-center">
+                          <span class="material-icons">{item.icon}</span>
+                        </div>
+                        <h4 class="font-bold text-lg dark:text-white">{item.title}</h4>
+                        <p class="text-slate-600 dark:text-slate-400 text-sm">{item.text}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div class="lg:w-1/2 bg-primary/5 rounded-3xl p-8 relative">
+                  <img alt="Logística e Distribuição" class="rounded-2xl shadow-xl w-full max-w-md mx-auto object-cover" src="img1.jpg" />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* CTA Section */}
+          <section class="py-16">
+            <div class="container mx-auto px-6">
+              <div class="bg-gradient-to-r from-primary to-[#1a1c52] rounded-3xl p-10 md:p-16 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">
+                <div class="relative z-10 text-center md:text-left">
+                  <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">Precisa de um orçamento urgente?</h2>
+                  <p class="text-slate-300 text-lg">Nossa equipe está disponível via WhatsApp para atendimento imediato.</p>
+                </div>
+                <div class="relative z-10">
+                  <a class="bg-green-500 hover:bg-green-600 text-white px-10 py-5 rounded-full font-bold flex items-center gap-3 text-lg transition-transform hover:scale-105 shadow-xl shadow-green-900/20" href="https://wa.me/5571993333950" target="_blank" rel="noopener noreferrer">
+                    <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" /></svg>
+                    Falar pelo WhatsApp
+                  </a>
+                </div>
+                <div class="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+              </div>
+            </div>
+          </section>
+          <Footer />
+        </div>
+      );
+    };
+
+    const SobrePage = () => (
+      <div className="animate-in fade-in duration-500">
+        <TopBar />
+        <Navbar />
+        <section class="relative py-24 overflow-hidden bg-white dark:bg-background-dark">
+          <div class="absolute inset-0 opacity-5 pointer-events-none">
+            <div class="absolute top-0 right-0 w-1/2 h-full bg-primary/20 rounded-full blur-3xl -mr-64 -mt-64"></div>
+            <div class="absolute bottom-0 left-0 w-1/3 h-full bg-primary/20 rounded-full blur-3xl -ml-32 -mb-32"></div>
+          </div>
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+            <span class="text-primary font-bold tracking-widest uppercase text-sm mb-4 block">Excelência em Saúde</span>
+            <h1 class="text-5xl md:text-6xl font-extrabold text-slate-900 dark:text-white mb-6">Sobre a iCare Med</h1>
+            <p class="text-xl text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
+              Referência nacional na distribuição de suprimentos hospitalares de alta performance, conectando inovação global com o cuidado local.
+            </p>
+          </div>
+        </section>
+
+        <section class="py-20 bg-background-light dark:bg-background-dark/50">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-2 gap-16 items-center mb-24">
+              <div class="relative">
+                <img alt="Modern Hospital Hallway" class="rounded-xl shadow-2xl object-cover h-[400px] w-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgaoDV8KerSxLDGOjEMQ4P6d5B7S4DEHUhkFf7NLScjKoVDQ_LKOdTMq82WamYgh19N1I_RwqG7d1pFhHFIVrwNBgdMdhKrk4PinyULqzcE2SrmtmkjHP3LZfnTe08BURsVZlcyTqbRVrbkP6UXoGklGEBNrOvFB9aXZGPlARgs_WXehu2coKEMFMMXoKMvVllXiFZdECa8TxM60O9aqR0hp6u9JBTkIuN6x13WAW4ANOw80ARL6sjJmQJupwZQfcI-hO7KPL9im0" />
+                <div class="absolute -bottom-6 -right-6 bg-primary p-8 rounded-lg text-white hidden lg:block shadow-xl">
+                  <span class="text-4xl font-bold block">+3</span>
+                  <span class="text-sm opacity-80">Anos de dedicação</span>
+                </div>
+              </div>
+              <div>
+                <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-6">Nossa História</h2>
+                <p class="text-slate-600 dark:text-slate-400 mb-6 leading-relaxed">
+                  Fundada com o propósito de elevar o padrão da cadeia de suprimentos hospitalares no Brasil, a iCare Med nasceu da observação das lacunas logísticas no setor de saúde. Desde 2022, evoluímos de uma operação local para um hub logístico nacional.
+                </p>
+                <p class="text-slate-600 dark:text-slate-400 leading-relaxed">
+                  Nossa trajetória é marcada por parcerias sólidas com fabricantes líderes globais, garantindo que a tecnologia médica mais avançada chegue com agilidade e segurança às mãos dos profissionais de saúde.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="py-20 bg-primary">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+              {[
+                { val: '3+', label: 'Anos no Mercado' },
+                { val: '100+', label: 'Clientes Atendidos' },
+                { val: '100+', label: 'Produtos Ativos' },
+                { val: '24h', label: 'Suporte Logístico' }
+              ].map((stat, i) => (
+                <div key={i} class="text-center text-white">
+                  <div class="text-4xl md:text-5xl font-extrabold mb-2">{stat.val}</div>
+                  <div class="text-sm font-bold uppercase tracking-widest opacity-70">{stat.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section class="py-24 bg-white dark:bg-background-dark">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+              <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-4">Certificações & Compliance</h2>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-8">
+              {['ANVISA', 'ISO', 'BPD', 'SGS'].map((cert, i) => (
+                <div key={i} class="flex flex-col items-center justify-center p-8 bg-slate-50 dark:bg-slate-800 rounded-xl">
+                  <span class="text-2xl font-bold text-primary mb-2">{cert}</span>
+                  <span class="text-xs uppercase font-semibold text-slate-400">Certificado Ativo</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+        <Footer />
+      </div>
+    );
+
+    const CatalogoPage = () => {
+      const categories = [
+        'Todos',
+        'EPIs e Descartáveis',
+        'Materiais para Procedimentos e todos os equipos',
+        'Higienização e Antissepsia',
+        'Curativos e Coberturas',
+        'Insumos',
+        'Medicamentos',
+      ];
+
+      const products = [
+        // EPIs e Descartáveis
+        { id: 1, tag: 'EPIs e Descartáveis', title: 'Papel toalha' },
+        { id: 2, tag: 'EPIs e Descartáveis', title: 'Lençol de maca' },
+        { id: 3, tag: 'EPIs e Descartáveis', title: 'Lençol de maca TNT' },
+        { id: 4, tag: 'EPIs e Descartáveis', title: 'Avental descartável' },
+        { id: 5, tag: 'EPIs e Descartáveis', title: 'Touca' },
+        { id: 6, tag: 'EPIs e Descartáveis', title: 'Propé' },
+        { id: 7, tag: 'EPIs e Descartáveis', title: 'Luva látex' },
+        { id: 8, tag: 'EPIs e Descartáveis', title: 'Luva vinil' },
+        { id: 33, tag: 'EPIs e Descartáveis', title: 'Luva Cirurgica' },
+        { id: 34, tag: 'EPIs e Descartáveis', title: 'Luva Nítrica' },
+        { id: 9, tag: 'EPIs e Descartáveis', title: 'Máscara descartável' },
+        { id: 10, tag: 'EPIs e Descartáveis', title: 'Máscara KN95' },
+
+        // Materiais para Procedimentos
+        { id: 11, tag: 'Materiais para Procedimentos e todos os equipos', title: 'Seringas (1ml, 3ml, 5ml, 10ml, 20ml, 60ml)' },
+        { id: 12, tag: 'Materiais para Procedimentos e todos os equipos', title: 'Agulha hipodérmica' },
+        { id: 13, tag: 'Materiais para Procedimentos e todos os equipos', title: 'Cateter intravenoso' },
+        { id: 14, tag: 'Materiais para Procedimentos e todos os equipos', title: 'Cateter tipo óculos' },
+        { id: 15, tag: 'Materiais para Procedimentos e todos os equipos', title: 'Scalp' },
+        { id: 16, tag: 'Materiais para Procedimentos e todos os equipos', title: 'Fio de nylon' },
+        { id: 17, tag: 'Materiais para Procedimentos e todos os equipos', title: 'Gel condutor' },
+        { id: 18, tag: 'Materiais para Procedimentos e todos os equipos', title: 'Esparadrapo' },
+        { id: 19, tag: 'Materiais para Procedimentos e todos os equipos', title: 'Micropore' },
+        { id: 38, tag: 'Materiais para Procedimentos e todos os equipos', title: 'Microcanulas' },
+
+        // Higienização e Antissepsia
+        { id: 20, tag: 'Higienização e Antissepsia', title: 'Álcool líquido' },
+        { id: 21, tag: 'Higienização e Antissepsia', title: 'Álcool em gel' },
+        { id: 22, tag: 'Higienização e Antissepsia', title: 'Clorexidina alcoólica' },
+        { id: 23, tag: 'Higienização e Antissepsia', title: 'Escova de clorexidina' },
+        { id: 24, tag: 'Higienização e Antissepsia', title: 'Hipoclorito' },
+        { id: 25, tag: 'Higienização e Antissepsia', title: 'Desinfetante hospitalar' },
+        { id: 26, tag: 'Higienização e Antissepsia', title: 'Água deionizada' },
+        { id: 35, tag: 'Higienização e Antissepsia', title: 'Sabão' },
+
+        // Curativos e Coberturas
+        { id: 27, tag: 'Curativos e Coberturas', title: 'Algodão hidrófilo 500g' },
+        { id: 28, tag: 'Curativos e Coberturas', title: 'Algodão em bolas hidrófilo (50g/100g)' },
+        { id: 29, tag: 'Curativos e Coberturas', title: 'Gaze estéril (pct c/ 10)' },
+        { id: 30, tag: 'Curativos e Coberturas', title: 'Gaze hidrófila (pct c/ 500)' },
+        { id: 31, tag: 'Curativos e Coberturas', title: 'Campo operatório estéril' },
+        { id: 32, tag: 'Curativos e Coberturas', title: 'Campo operatório não estéril' },
+
+        // Insumos
+        { id: 36, tag: 'Insumos', title: 'Todos os soros' },
+
+        // Medicamentos
+        { id: 37, tag: 'Medicamentos', title: 'Medicamentos sob consulta' },
+
+      ];
+      // paths built numerically matching catalog items
+      products.forEach(p => p.img = `catalogo/${p.id}.png`);
+
+
+      const [selectedCategories, setSelectedCategories] = useState(['Todos']);
+
+      const toggleCategory = (category) => {
+        setSelectedCategories((prev) => {
+          const has = prev.includes(category);
+
+          // Se clicar em "Todos", ele vira o único selecionado
+          if (category === 'Todos') {
+            return ['Todos'];
+          }
+
+          // Alterna categoria normal
+          const next = has ? prev.filter((c) => c !== category) : [...prev.filter((c) => c !== 'Todos'), category];
+
+          // Se não sobrar nada marcado, volta para "Todos"
+          return next.length === 0 ? ['Todos'] : next;
+        });
+      };
+
+      const filteredProducts = selectedCategories.includes('Todos')
+        ? products
+        : products.filter((p) => selectedCategories.includes(p.tag));
+
+      return (
+        <div className="animate-in fade-in duration-500">
+          <TopBar />
+          <Navbar />
+          <section class="bg-white dark:bg-slate-900 py-8 border-b border-primary/5">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+              <div>
+                <h1 class="text-4xl font-bold text-slate-900 dark:text-white">Catálogo de Materiais Hospitalares</h1>
+                <p class="mt-2 text-slate-500 dark:text-slate-400 max-w-2xl">Explore nossa linha completa de suprimentos hospitalares de alta performance.</p>
+              </div>
+              <a href="catalogo.pdf" download class="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white font-semibold px-5 py-2.5 rounded-lg transition-colors shadow-md shrink-0">
+                <span class="material-icons text-[20px]">picture_as_pdf</span>
+                Baixar catálogo em PDF
+              </a>
+            </div>
+          </section>
+
+          <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="flex flex-col lg:flex-row gap-8">
+              <aside class="w-full lg:w-64 space-y-8">
+                <div>
+                  <h3 class="text-sm font-bold uppercase tracking-wider text-primary dark:text-accent mb-4">Categorias</h3>
+                  <div class="space-y-2">
+                    {categories.map((c, i) => (
+                      <label key={i} class="flex items-center gap-3 cursor-pointer group">
+                        <input
+                          type="checkbox"
+                          checked={selectedCategories.includes(c)}
+                          onChange={() => toggleCategory(c)}
+                          class="rounded border-slate-300 text-primary focus:ring-primary"
+                        />
+                        <span class="text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors">{c}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <div class="bg-primary rounded-xl p-6 text-white">
+                  <p class="text-xs font-semibold uppercase opacity-80 mb-2">Atendimento Direto</p>
+                  <h4 class="text-lg font-bold mb-4">Grandes Volumes?</h4>
+                  <Link to="/proposta" class="block w-full text-center bg-white text-primary py-2 rounded-lg font-bold text-sm hover:bg-opacity-90 transition-all">Falar com Consultor</Link>
+                </div>
+              </aside>
+
+              <div class="flex-1 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {filteredProducts.map((p) => (
+                  <div key={p.id} class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden hover:shadow-xl transition-shadow group">
+                    <div class="relative h-56 bg-slate-50 dark:bg-slate-800 flex items-center justify-center p-8">
+                      {p.img ? (
+                        <img class="max-h-full max-w-full object-contain mix-blend-multiply transition-transform duration-500 group-hover:scale-105" src={p.img} alt={p.title} />
+                      ) : (
+                        <span class="material-icons text-primary/50 dark:text-accent/70 text-[72px]">inventory_2</span>
+                      )}
+                      <span class="absolute top-4 left-4 bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded">{p.tag}</span>
+                    </div>
+                    <div class="p-6">
+                      <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-2 leading-tight">{p.title}</h3>
+                      {p.desc ? (
+                        <p class="text-sm text-slate-500 dark:text-slate-400 mb-6 line-clamp-2">{p.desc}</p>
+                      ) : (
+                        <div class="h-6"></div>
+                      )}
+                      <Link to="/proposta" class="w-full bg-accent hover:bg-[#0296c7] text-white py-3 rounded-lg font-bold transition-all flex items-center justify-center gap-2">
+                        <span class="material-icons text-sm">request_quote</span>
+                        Solicitar orçamento
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </main>
+          <Footer />
+        </div>
+      );
+    };
+
+    const ContatoPage = () => (
+      <div className="animate-in fade-in duration-500">
+        <TopBar />
+        <Navbar />
+        <section class="bg-primary/5 py-16">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white mb-6">Contato</h1>
+          </div>
+        </section>
+
+        <section class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 pb-20">
+          <div class="bg-white dark:bg-slate-900 rounded-xl shadow-xl p-12 border border-slate-100 dark:border-slate-800 text-center">
+            <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white mb-4">Quer falar com a nossa equipe?</h2>
+            <p class="text-lg text-slate-600 dark:text-slate-400 mb-6">Clique no botão abaixo e inicie uma conversa direta via WhatsApp. Estamos prontos para atender seu pedido com agilidade.</p>
+            <a href="https://wa.me/5571993333950?text=Olá,%20gostaria%20de%20um%20orçamento" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-3 bg-green-500 hover:bg-green-600 text-white font-bold px-8 py-4 rounded-full shadow-lg text-lg">
+              <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" /></svg>
+              Falar no WhatsApp
+            </a>
+          </div>
+        </section>
+        <Footer />
+      </div>
+    );
+
+    const PropostaPage = () => (
+      <div className="animate-in fade-in duration-500">
+        <TopBar />
+        <Navbar />
+        {/* Hero */}
+        <section class="bg-gradient-to-b from-primary/10 to-transparent dark:from-slate-900/40 py-16">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <h1 class="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white leading-tight">
+                Proposta iCare Med: <span class="text-primary">entrega rápida</span> e <span class="text-accent">distribuição eficiente</span>
+              </h1>
+              <p class="mt-6 text-lg text-slate-600 dark:text-slate-400 max-w-xl">
+                Operação orientada a SLA, portfólio essencial e atendimento ágil para manter sua clínica ou hospital sempre abastecido, com rastreabilidade e conformidade.
+              </p>
+              <div class="mt-8 flex flex-col sm:flex-row gap-4">
+                <Link to="/contato" class="inline-flex items-center justify-center gap-2 bg-accent hover:bg-accent/90 text-white font-semibold px-7 py-3.5 rounded-lg transition-colors shadow-md">
+                  <span class="material-icons text-[20px]">chat</span>
+                  Solicitar orçamento
+                </Link>
+                <a href="https://wa.me/5571993333950" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold px-7 py-3.5 rounded-lg transition-colors shadow-md">
+                  <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z\" /></svg>
+                  Falar no WhatsApp
+                </a>
+              </div>
+            </div>
+            <div class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-8 shadow-xl">
+              <h3 class="text-xl font-extrabold text-slate-900 dark:text-white mb-6">O que você ganha com a iCare Med</h3>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                {[
+                  { icon: 'local_shipping', title: 'Entrega rápida', desc: 'Prazos definidos e acompanhamento do pedido.' },
+                  { icon: 'sync_alt', title: 'Distribuição eficiente', desc: 'Reposição contínua com logística otimizada.' },
+                  { icon: 'verified', title: 'Qualidade & conformidade', desc: 'Materiais alinhados a boas práticas e padrões.' },
+                  { icon: 'support_agent', title: 'Atendimento ágil', desc: 'Resposta rápida e suporte consultivo.' },
+                ].map((b, i) => (
+                  <div key={i} class="flex gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                      <span class="material-icons text-[20px]">{b.icon}</span>
+                    </div>
+                    <div>
+                      <p class="font-bold text-slate-900 dark:text-white leading-tight">{b.title}</p>
+                      <p class="text-sm text-slate-600 dark:text-slate-400">{b.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Como trabalhamos */}
+        <section class="py-20 bg-white dark:bg-background-dark">
+          <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-2xl">
+              <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white">Uma operação pensada para o seu fluxo</h2>
+              <p class="mt-4 text-slate-600 dark:text-slate-400">
+                Da solicitação ao recebimento: processos simples, transparência e foco em disponibilidade dos itens essenciais.
+              </p>
+            </div>
+            <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+              {[
+                { step: '01', title: 'Entendimento da necessidade', desc: 'Você informa volume, frequência e itens críticos.' },
+                { step: '02', title: 'Proposta e prazos', desc: 'Montamos uma proposta objetiva com condições e SLA.' },
+                { step: '03', title: 'Entrega e reposição', desc: 'Entrega rápida e acompanhamento para reposição contínua.' },
+              ].map((s, i) => (
+                <div key={i} class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-8">
+                  <div class="text-primary font-extrabold text-3xl">{s.step}</div>
+                  <h3 class="mt-3 text-lg font-bold text-slate-900 dark:text-white">{s.title}</h3>
+                  <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">{s.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+
+        <Footer />
+      </div>
+    );
+
+    // --- App Component with Router ---
+
+    const App = () => {
+      const { pathname } = useLocation();
+
+      // Scroll to top on route change
+      useEffect(() => {
+        window.scrollTo(0, 0);
+      }, [pathname]);
+
+      return (
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/sobre" element={<SobrePage />} />
+          <Route path="/catalogo" element={<CatalogoPage />} />
+          <Route path="/contato" element={<ContatoPage />} />
+          <Route path="/proposta" element={<PropostaPage />} />
+        </Routes>
+      );
+    };
+
+    const RootApp = () => (
+      <MemoryRouter>
+        <App />
+      </MemoryRouter>
+    );
+
+    const container = document.getElementById('root');
+    const root = createRoot(container);
+    root.render(<RootApp />);
+  </script>
+</body>
+
+</html>
